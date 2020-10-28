@@ -1,6 +1,6 @@
-# spacy-knowledge-base
+# business-news-knowledge-base
 
-Constructing a Spacy KnowledgeBase using Wikidata.
+Constructing a Spacy KnowledgeBase by reading news articles and referencing Wikidata.
 
 ## Usage
 
