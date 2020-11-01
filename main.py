@@ -18,34 +18,38 @@ def main() -> int:
     doc = nlp(article.text)
     doc.user_data["title"] = article.title
     # initial = displacy.serve(doc, style="ent")
-
-    # process the article
     entities = [o for o in doc.ents if o.label_ in ["ORG", "PERSON", "GPE", "WORK_OF_ART", "FAC"]]
     print(f"Extracted {len(entities)} entities")
 
-
-    # TODO: Consolidate multiple mentions of each entity into one (multiple sentences reference Palantir, but they all resolve to different Wikidata entities)
-    for entity in entities:
-        mention = get_mention_of_entity(entity)
-        possible_matches = search_wikidata(entity.text)
+    consolidated_entities = {entity.text: [mention for mention in entities if mention.text == entity.text] for entity in entities}
+    for entity, mentions in consolidated_entities.items():
+        mention_spans = [get_mention_of_entity(mention) for mention in mentions]
+        composite_mention = " ".join([mention.text for mention in mention_spans])
+        print(f"Searching for {entity} using the following context")
+        print(composite_mention)
+        possible_matches = search_wikidata(entity)
+        breakpoint()
         if len(possible_matches) == 1:
             match = possible_matches[0]
-            print(f"{entity.text} is actually {match['id']} - {match['title']}: {match['description']}")
+            print(f"{entity} is actually {match['id']} - {match['title']}: {match['description']}")
         elif len(possible_matches) > 1:
+            embedded_composite_mention = nlp(composite_mention)
             results = []
             for match in possible_matches:
+                # use a Wikidata library to grab metadata/categories (description embeddings don't work)
                 if len(match["description"]) > 0:
                     results += [(
                         match["id"],
-                        nlp(match["description"]).similarity(mention)
+                        nlp(match["description"]).similarity(embedded_composite_mention)
                     )]
             breakpoint()
             results.sort(key=lambda x: x[1], reverse=True)
             top_result, *_ = results
             best_match, = [match for match in possible_matches if match["id"] == top_result[0]]
-            print(f"{entity.text} is likely {best_match['id']} - {best_match['title']}: {best_match['description']} with confidence {top_result[1]}")
+            print(f"{entity} is likely {best_match['id']} - {best_match['title']}: {best_match['description']} with confidence {top_result[1]}")
         else:
-            print(f"Wikidata has no match for {entity.text}")
+            print(f"Wikidata has no match for {entity}")
+        print()
         # TODO: add to KnowledgeBase
     breakpoint()
     # TODO: retrain the model/KnowledgeBase
