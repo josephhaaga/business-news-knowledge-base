@@ -24,24 +24,27 @@ def main() -> int:
     print(f"Extracted {len(entities)} entities")
 
 
-    # TODO: Consolidate multiple mentions of each entity into one (multiple sentences reference Palantir, but they resolve to different Wikidata entities)
+    # TODO: Consolidate multiple mentions of each entity into one (multiple sentences reference Palantir, but they all resolve to different Wikidata entities)
     for entity in entities:
-        # TODO: skip if already added to KnowledgeBase on an earlier iteration
         mention = get_mention_of_entity(entity)
         possible_matches = search_wikidata(entity.text)
         if len(possible_matches) == 1:
             match = possible_matches[0]
             print(f"{entity.text} is actually {match['id']} - {match['title']}: {match['description']}")
         elif len(possible_matches) > 1:
-            #mention_doc = nlp(mention)
-            x = {}
+            results = []
             for match in possible_matches:
-                x[match["id"]] = nlp(match["description"]).similarity(mention)
-                # TODO: embed the 
-            top_result = sorted(list(x.items()), key=lambda x: x[1], reverse=True)[0]
+                if len(match["description"]) > 0:
+
+                    results += [(
+                        match["id"],
+                        nlp(match["description"]).similarity(mention)
+                    )]
+            breakpoint()
+            results.sort(key=lambda x: x[1], reverse=True)
+            top_result, *_ = results
             best_match, = [match for match in possible_matches if match["id"] == top_result[0]]
             print(f"{entity.text} is likely {best_match['id']} - {best_match['title']}: {best_match['description']} with confidence {top_result[1]}")
-            breakpoint()
         else:
             print(f"Wikidata has no match for {entity.text}")
         # TODO: add to KnowledgeBase
