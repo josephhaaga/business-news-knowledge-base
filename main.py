@@ -35,7 +35,6 @@ def main() -> int:
             results = []
             for match in possible_matches:
                 if len(match["description"]) > 0:
-
                     results += [(
                         match["id"],
                         nlp(match["description"]).similarity(mention)
@@ -68,12 +67,11 @@ def download_article(url: str) -> Article:
 
 
 def get_mention_of_entity(entity):
-    sentences = list(entity.doc.sents)
-    i = 0
-    for ind, length in enumerate([len(sent.text) for sent in sentences]):
-        i += length
-        if i > entity.start_char:
-            return sentences[ind]
+    total = 0
+    for sent in entity.doc.sents:
+        total += len(sent.text)
+        if total > entity.start_char:
+            return sent
 
 
 def search_wikidata(query: str) -> List[Dict]:
