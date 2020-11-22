@@ -18,15 +18,23 @@ def main() -> int:
     for entity, mentions in entity_mentions.items():
         mention_spans = [get_mention_of_entity(mention) for mention in mentions]
         composite_mention = " ".join([mention.text for mention in mention_spans])
-        print(f"Searching for {entity} using the following context:\n{composite_mention}")
 
         # pos_tag_description = spacy.explain(mentions[0].label_)
         _ = [mention.label_ for mention in mentions]
         labels_and_counts = {i: _.count(i) for i in set(_)}
-        most_frequent_label = max(labels_and_counts.items(), key=operator.itemgetter(1))[0]
+        most_frequent_label = max(
+            labels_and_counts.items(), key=operator.itemgetter(1)
+        )[0]
+
+        print(f"Searching for {entity} using entity label {most_frequent_label}")
+
 
         potential_matches = search_wikidata(entity, most_frequent_label)
-        breakpoint()
+
+        print(f"{len(potential_matches)} matches found:")
+        for match in potential_matches:
+            print(f"{match['entityLabel']['value']} - {match['entity']['value']}")
+        print()
 
 
 if __name__ == "__main__":

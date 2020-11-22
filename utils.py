@@ -1,3 +1,5 @@
+import json
+import time
 from typing import Dict
 from typing import List
 from typing import Sequence
@@ -48,21 +50,22 @@ QID_FOR_POS_TAG = {
     "PERSON": "Q5",
     "GPE": "Q15642541",
     "WORK_OF_ART": "Q15621286",
-    "FAC": "Q811979"
+    "FAC": "Q811979",
 }
 
 
 def search_wikidata(entity_name: str, entity_pos_tag: str) -> List[Dict]:
     """Search Wikidata for entities named `entity_name`, whose type is a hyponym or match of `entity_type`.
     """
-    url = 'https://query.wikidata.org/sparql'
+    url = "https://query.wikidata.org/sparql"
     QID = QID_FOR_POS_TAG[entity_pos_tag]
+    clean_entity_name = entity_name.replace('"', "'")
     query = f"""
 SELECT ?entity ?entityLabel WHERE {{
     SERVICE wikibase:mwapi {{
         bd:serviceParam wikibase:endpoint "www.wikidata.org";
         wikibase:api "EntitySearch";
-        mwapi:search "{entity_name}";
+        mwapi:search "{clean_entity_name}";
         mwapi:language "en".
         ?entity wikibase:apiOutputItem mwapi:item.
     }}
@@ -71,11 +74,20 @@ SELECT ?entity ?entityLabel WHERE {{
         bd:serviceParam wikibase:language "[AUTO_LANGUAGE],fr,ar,be,bg,bn,ca,cs,da,de,el,en,es,et,fa,fi,he,hi,hu,hy,id,it,ja,jv,ko,nb,nl,eo,pa,pl,pt,ro,ru,sh,sk,sr,sv,sw,te,th,tr,uk,yue,vec,vi,zh"
     }}
 }}
-LIMIT 100
+LIMIT 10
     """
-    r = requests.get(url, params = {'format': 'json', 'query': query})
-    data = r.json()
-    return data['results']['bindings']
-
-
-
+    try:
+        r = requests.get(
+            url,
+            headers={"Accept": "application/json"},
+            params={"format": "json", "query": query},
+        )
+        data = r.json()
+        return data["results"]["bindings"]
+    except json.decoder.JSONDecodeError:
+        print("The following query failed")
+        print(query)
+        print()
+        print(r)
+        print()
+        return []
