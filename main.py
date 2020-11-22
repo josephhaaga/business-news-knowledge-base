@@ -4,7 +4,6 @@ import spacy
 
 from utils import download_article
 from utils import get_entity_mentions
-from utils import get_mention_of_entity
 from utils import search_wikidata
 
 
