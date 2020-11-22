@@ -16,10 +16,6 @@ def main() -> int:
     print(f"Extracted {len(entity_mentions)} entities")
 
     for entity, mentions in entity_mentions.items():
-        mention_spans = [get_mention_of_entity(mention) for mention in mentions]
-        composite_mention = " ".join([mention.text for mention in mention_spans])
-
-        # pos_tag_description = spacy.explain(mentions[0].label_)
         _ = [mention.label_ for mention in mentions]
         labels_and_counts = {i: _.count(i) for i in set(_)}
         most_frequent_label = max(
@@ -27,11 +23,9 @@ def main() -> int:
         )[0]
 
         print(f"Searching for {entity} using entity label {most_frequent_label}")
-
-
         potential_matches = search_wikidata(entity, most_frequent_label)
+        print(f"{len(potential_matches)} matches found")
 
-        print(f"{len(potential_matches)} matches found:")
         for match in potential_matches:
             print(f"{match['entityLabel']['value']} - {match['entity']['value']}")
         print()

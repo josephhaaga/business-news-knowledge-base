@@ -36,15 +36,6 @@ def get_entity_mentions(doc) -> Dict[str, spacy.tokens.span.Span]:
     return mentions_grouped_by_entity
 
 
-# TODO: document what this does; it looks like it gets every mention of an entity in the source doc?
-def get_mention_of_entity(entity):
-    total = 0
-    for sent in entity.doc.sents:
-        total += len(sent.text)
-        if total > entity.start_char:
-            return sent
-
-
 QID_FOR_POS_TAG = {
     "ORG": "Q43229",
     "PERSON": "Q5",
