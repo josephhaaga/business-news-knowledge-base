@@ -1,19 +1,41 @@
 import operator
 
 import spacy
+from spacy.kb import KnowledgeBase
 
-from utils import download_article
-from utils import get_entity_mentions
+from utils import LanguageService
 from utils import search_wikidata
 
 
 def main() -> int:
     URL = "https://www.cnbc.com/2020/09/22/palantir-says-it-expects-42percent-revenue-growth-this-year-to-1point06-billion.html"
 
-    doc = download_article(URL)
-    entity_mentions = get_entity_mentions(doc)
-    print(f"Extracted {len(entity_mentions)} entities")
+    language_service = LanguageService()
+    doc = language_service.download_article(URL)
 
+    # add Palantir to the KnowledgeBase
+    entity_to_add = "Palantir"
+
+    entity_id = "Q2047336"
+    start_of_first_mention = doc.text.index(entity_to_add)
+    end_of_first_mention = start_of_first_mention + len(entity_to_add)
+    span = doc.char_span(start_of_first_mention, end_of_first_mention)
+
+    language_service.kb.add_entity(
+        entity=entity_id,
+        freq=doc.text.count(entity_to_add),
+        entity_vector=span.vector,
+    )
+
+    language_service.kb.add_alias(
+        alias=entity_to_add, entities=[entity_id], probabilities=[1.0]
+    )
+
+    # Looks like we also need add the entities and retrain the model
+
+    doc = language_service.download_article(URL)
+    entity_mentions = language_service.get_entity_mentions(doc)
+    print(f"Extracted {len(entity_mentions)} entities")
     for entity, mentions in entity_mentions.items():
         _ = [mention.label_ for mention in mentions]
         labels_and_counts = {i: _.count(i) for i in set(_)}

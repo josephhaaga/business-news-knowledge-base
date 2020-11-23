@@ -7,33 +7,36 @@ from typing import Sequence
 from newspaper import Article
 import requests
 import spacy
+from spacy.kb import KnowledgeBase
 from spacy import displacy
 
 
-nlp = spacy.load("en_core_web_md")
+class LanguageService:
+    def __init__(self):
+        self.nlp = spacy.load("en_core_web_md")
+        self.vocab = self.nlp.vocab
+        self.kb = KnowledgeBase(vocab=self.vocab, entity_vector_length=300)
 
+    def download_article(self, url: str) -> spacy.tokens.doc.Doc:
+        article = Article(url)
+        article.download()
+        article.parse()
+        doc = self.nlp(article.text)
+        doc.user_data["title"] = article.title
+        # initial = displacy.serve(doc, style="ent")
+        return doc
 
-def download_article(url: str) -> spacy.tokens.doc.Doc:
-    article = Article(url)
-    article.download()
-    article.parse()
-    doc = nlp(article.text)
-    doc.user_data["title"] = article.title
-    # initial = displacy.serve(doc, style="ent")
-    return doc
-
-
-def get_entity_mentions(doc) -> Dict[str, spacy.tokens.span.Span]:
-    entities = [
-        o
-        for o in doc.ents
-        if o.label_ in ["ORG", "PERSON", "GPE", "WORK_OF_ART", "FAC"]
-    ]
-    mentions_grouped_by_entity = {
-        entity.text: [mention for mention in entities if mention.text == entity.text]
-        for entity in entities
-    }
-    return mentions_grouped_by_entity
+    def get_entity_mentions(self, doc) -> Dict[str, spacy.tokens.span.Span]:
+        entities = [
+            o
+            for o in doc.ents
+            if o.label_ in ["ORG", "PERSON", "GPE", "WORK_OF_ART", "FAC"]
+        ]
+        mentions_grouped_by_entity = {
+            entity.text: [mention for mention in entities if mention.text == entity.text]
+            for entity in entities
+        }
+        return mentions_grouped_by_entity
 
 
 QID_FOR_POS_TAG = {
