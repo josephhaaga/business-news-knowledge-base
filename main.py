@@ -4,8 +4,8 @@ import spacy
 from spacy.kb import KnowledgeBase
 
 from utils import LanguageService
+from utils import print_mention_of_entity
 from utils import search_wikidata
-
 
 def main() -> int:
     URL = "https://www.cnbc.com/2020/09/22/palantir-says-it-expects-42percent-revenue-growth-this-year-to-1point06-billion.html"

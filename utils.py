@@ -85,3 +85,14 @@ LIMIT 10
         print(r)
         print()
         return []
+
+
+def print_mention_of_entity(mention: spacy.tokens.span.Span) -> None:
+    # sent, start_char, text_with_ws, end_char
+    sent = mention.sent
+    white_fg = "\u001b[37m"
+    red_bg = "\u001b[41m"
+    reset = "\u001b[0m"
+    print(sent[:mention.start], end=' ')
+    print(f"{red_bg}{white_fg}{mention.text}{reset}", end=' ')
+    print(sent[mention.end:])
