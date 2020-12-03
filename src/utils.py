@@ -87,6 +87,18 @@ LIMIT 10
         return []
 
 
+def prompt_user_to_annotate_entity(entity):
+    print_mention_of_entity(entity)
+    number_of_entities = input("How many entities are highlighted: ")
+    entities = []
+    for i in range(1, int(number_of_entities) + 1):
+        print()
+        entity_name = input("Entity name: ")
+        entity_type = input("Entity type: ")
+        entities += [{"name": entity_name, "type": entity_type}]
+        print(f"Added Entity {i}: {entity_name}", end="\n")
+    breakpoint()
+
 def print_mention_of_entity(mention: spacy.tokens.span.Span) -> None:
     # sent, start_char, text_with_ws, end_char
     sent = mention.sent

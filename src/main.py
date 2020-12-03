@@ -4,8 +4,9 @@ import spacy
 from spacy.kb import KnowledgeBase
 
 from utils import LanguageService
-from utils import print_mention_of_entity
+from utils import prompt_user_to_annotate_entity
 from utils import search_wikidata
+
 
 def main() -> int:
     URL = "https://www.cnbc.com/2020/09/22/palantir-says-it-expects-42percent-revenue-growth-this-year-to-1point06-billion.html"
@@ -13,9 +14,13 @@ def main() -> int:
     language_service = LanguageService()
     doc = language_service.download_article(URL)
 
+
+    p = doc.ents[0]
+    prompt_user_to_annotate_entity(p)
+    breakpoint()
+
     # add Palantir to the KnowledgeBase
     entity_to_add = "Palantir"
-
     entity_id = "Q2047336"
     start_of_first_mention = doc.text.index(entity_to_add)
     end_of_first_mention = start_of_first_mention + len(entity_to_add)
